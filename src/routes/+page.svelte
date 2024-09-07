@@ -8,7 +8,6 @@
     snakeEyeFails: 0,
     lowPointFails: 0,
   }));
-  $: console.log({ simulations });
 
   const throwDice = () => Math.floor(Math.random() * 6) + 1;
 
