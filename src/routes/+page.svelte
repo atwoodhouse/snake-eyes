@@ -1,2 +1,14 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+  import Result from "$lib/components/Result.svelte";
+
+  let simulations = Array.from({ length: 12 }, (_, index) => ({
+    throws: 9 + index,
+    snakeEyeRisk: 0,
+    lowPointsRisk: 0,
+  }));
+  $: console.log({ simulations });
+</script>
+
+{#each simulations as { throws, snakeEyeRisk, lowPointsRisk }}
+  <Result {throws} {snakeEyeRisk} {lowPointsRisk} />
+{/each}

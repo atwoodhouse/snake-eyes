@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+dependencies:
+  '@fontsource/vt323':
+    specifier: ^5.0.14
+    version: 5.0.14
+
 devDependencies:
   '@playwright/test':
     specifier: ^1.28.1
@@ -333,6 +338,10 @@ packages:
     dependencies:
       levn: 0.4.1
     dev: true
+
+  /@fontsource/vt323@5.0.14:
+    resolution: {integrity: sha512-cv6wVKKl5Vyr74MN82xAw5RS7Yxqm7IH7eXPwUBKqrdbPOdCW7+fWo0XkUaA8lLs0BX3DyFzhJt4zi1Lsa7Ozg==}
+    dev: false
 
   /@humanwhocodes/module-importer@1.0.1:
     resolution: {integrity: sha512-bxveV4V8v5Yb4ncFTT3rPSgZBOpCkjfK0y4oVVVJwIuDVBRMDXrPyXRL988i5ap9m9bnyEEjWfm5WkBmtffLfA==}

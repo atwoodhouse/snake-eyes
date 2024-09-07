@@ -1,0 +1,14 @@
+:root {
+  --c-dark: #3c3c3b;
+  --c-default: #01d758;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  font-family: "VT323", monospace;
+  background-color: var(--c-dark);
+  color: var(--c-default);
+}
