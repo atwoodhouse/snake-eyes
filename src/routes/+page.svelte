@@ -55,7 +55,9 @@
 
           runs: {
             snakeEye: simulations[index].runs.snakeEye + 1,
-            lowPoint: simulations[index].runs.lowPoint + 1,
+            lowPoint: snakeEyeFail
+              ? simulations[index].runs.lowPoint
+              : simulations[index].runs.lowPoint + 1,
           },
         };
       });
