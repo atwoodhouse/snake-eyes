@@ -1,10 +1,14 @@
 <script lang="ts">
   import Result from "$lib/components/Result.svelte";
+  import type { Simulation } from "$lib/types";
   import { onMount, tick } from "svelte";
 
-  let simulations = Array.from({ length: 15 }, (_, index) => ({
+  let simulations: Simulation[] = Array.from({ length: 15 }, (_, index) => ({
     throws: 10 + index,
-    runs: 0,
+    runs: {
+      snakeEye: 0,
+      lowPoint: 0,
+    },
     snakeEyeFails: 0,
     lowPointFails: 0,
   }));
@@ -44,11 +48,15 @@
             ? simulations[index].snakeEyeFails + 1
             : simulations[index].snakeEyeFails,
 
-          lowPointFails: lowPointFail
-            ? simulations[index].lowPointFails + 1
-            : simulations[index].lowPointFails,
+          lowPointFails:
+            lowPointFail && !snakeEyeFail
+              ? simulations[index].lowPointFails + 1
+              : simulations[index].lowPointFails,
 
-          runs: simulations[index].runs + 1,
+          runs: {
+            snakeEye: simulations[index].runs.snakeEye + 1,
+            lowPoint: simulations[index].runs.lowPoint + 1,
+          },
         };
       });
       await tick();
@@ -57,9 +65,9 @@
   });
 </script>
 
-<h1>Runs {simulations[0].runs}</h1>
-{#each simulations as { throws, runs, snakeEyeFails, lowPointFails }}
-  <Result {throws} {runs} {snakeEyeFails} {lowPointFails} />
+<h1>Runs {simulations[0].runs.snakeEye}</h1>
+{#each simulations as simulation}
+  <Result {simulation} />
 {/each}
 
 <style>

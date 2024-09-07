@@ -1,17 +1,16 @@
 <script lang="ts">
-  export let throws: number;
-  export let runs: number;
-  export let snakeEyeFails: number;
-  export let lowPointFails: number;
+  import type { Simulation } from "$lib/types";
 
-  $: snakeEyeRisk = snakeEyeFails / runs;
-  $: lowPointRisk = lowPointFails / runs;
+  export let simulation: Simulation;
+
+  $: snakeEyeRisk = simulation.snakeEyeFails / simulation.runs.snakeEye;
+  $: lowPointRisk = simulation.lowPointFails / simulation.runs.lowPoint;
 
   $: totalRisk = 1 - (1 - snakeEyeRisk) * (1 - lowPointRisk);
 </script>
 
 <div class="container">
-  <div>Throws<span>{throws}</span></div>
+  <div>Throws<span>{simulation.throws}</span></div>
   <div>Risk of snake eyes<span>{(snakeEyeRisk * 100).toFixed(1)}%</span></div>
   <div>Risk of low points<span>{(lowPointRisk * 100).toFixed(1)}%</span></div>
   <div>Total risk: <span>{(totalRisk * 100).toFixed(1)}%</span></div>
