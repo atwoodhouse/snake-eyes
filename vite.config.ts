@@ -6,4 +6,15 @@ export default defineConfig({
   test: {
     include: ["src/**/*.{test,spec}.{js,ts}"],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("worker")) {
+            return "worker";
+          }
+        },
+      },
+    },
+  },
 });

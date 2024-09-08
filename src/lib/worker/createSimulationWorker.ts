@@ -1,3 +1,3 @@
-import workerURL from "./simulationWorker.ts?url";
+import Worker from "./simulationWorker.ts?worker";
 
-export default () => new Worker(workerURL);
+export default () => new Worker();

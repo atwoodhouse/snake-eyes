@@ -5,7 +5,9 @@ try {
   console.error("Failed to load GPU script", e);
 }
 
-const gpu = new GPU({ mode: "gpu" });
+const gpu = new GPU({
+  mode: "gpu",
+});
 
 const simulateGamesGPU = gpu
   .createKernel(function (throwsPerGame: number) {
@@ -14,38 +16,27 @@ const simulateGamesGPU = gpu
     let runsSnakeEye = 0;
     let runsLowPoint = 0;
     let points = 0;
-    let snakeEyeFail = false;
+    let snakeEyeFail = 0;
 
-    for (let j = 0; j < throwsPerGame; j++) {
+    for (let j = 0; j < throwsPerGame; j += 1) {
       const dice1 = Math.floor(Math.random() * 6) + 1;
       const dice2 = Math.floor(Math.random() * 6) + 1;
 
-      if (dice1 === 1 && dice2 === 1) {
-        snakeEyeFail = true;
-      }
+      snakeEyeFail = dice1 === 1 && dice2 === 1 ? 1 : 0;
 
       points += dice1 + dice2;
     }
 
-    if (snakeEyeFail) {
-      snakeEyeFails += 1;
-    }
-
-    if (points < 100 && !snakeEyeFail) {
-      lowPointFails += 1;
-    }
+    snakeEyeFails += snakeEyeFail;
+    lowPointFails += points < 100 && snakeEyeFail === 0 ? 1 : 0;
 
     runsSnakeEye += 1;
-    if (!snakeEyeFail) {
-      runsLowPoint += 1;
-    }
+    runsLowPoint += snakeEyeFail === 0 ? 1 : 0;
 
     return [snakeEyeFails, lowPointFails, runsSnakeEye, runsLowPoint];
   })
-  .setOutput([100000]) // Run 100k games in parallel
-  .setPipeline(true);
+  .setOutput([100000]);
 
-// Worker state
 let simulations: any[] = [];
 let running = false;
 
@@ -66,12 +57,10 @@ const runSimulations = () => {
   if (!running) return;
 
   try {
-    for (let i = 0; i < simulations.length; i++) {
+    for (let i = 0; i < simulations.length; i += 1) {
       const simulation = simulations[i];
 
-      const gpuResult = simulateGamesGPU(simulation.throws);
-
-      const result = gpuResult.toArray() as [number, number, number, number][];
+      const result = simulateGamesGPU(simulation.throws || 0) as [number, number, number, number][];
 
       // Aggregate results for all 100k simulations
       let aggregatedSnakeEyeFails = 0;
@@ -79,13 +68,14 @@ const runSimulations = () => {
       let aggregatedRunsSnakeEye = 0;
       let aggregatedRunsLowPoint = 0;
 
-      for (let j = 0; j < result.length; j++) {
+      for (let j = 0; j < result.length; j += 1) {
         aggregatedSnakeEyeFails += result[j][0];
         aggregatedLowPointFails += result[j][1];
         aggregatedRunsSnakeEye += result[j][2];
         aggregatedRunsLowPoint += result[j][3];
       }
 
+      // Update the simulation results
       simulations[i] = {
         ...simulation,
         snakeEyeFails: simulation.snakeEyeFails + aggregatedSnakeEyeFails,
