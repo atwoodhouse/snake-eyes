@@ -22,14 +22,12 @@ const simulateGamesGPU = gpu
       const dice1 = Math.floor(Math.random() * 6) + 1;
       const dice2 = Math.floor(Math.random() * 6) + 1;
 
-      snakeEyeFail = dice1 === 1 && dice2 === 1 ? 1 : 0;
-
+      snakeEyeFail = snakeEyeFail === 1 ? 1 : (dice1 === 1 ? 1 : 0) * (dice2 === 1 ? 1 : 0);
       points += dice1 + dice2;
     }
 
     snakeEyeFails += snakeEyeFail;
     lowPointFails += points < 100 && snakeEyeFail === 0 ? 1 : 0;
-
     runsSnakeEye += 1;
     runsLowPoint += snakeEyeFail === 0 ? 1 : 0;
 
@@ -60,6 +58,7 @@ const runSimulations = () => {
     for (let i = 0; i < simulations.length; i += 1) {
       const simulation = simulations[i];
 
+      // Execute the kernel with the specific throws per game
       const result = simulateGamesGPU(simulation.throws || 0) as [number, number, number, number][];
 
       // Aggregate results for all 100k simulations
@@ -75,7 +74,7 @@ const runSimulations = () => {
         aggregatedRunsLowPoint += result[j][3];
       }
 
-      // Update the simulation results
+      // Update the simulation results with the correct values
       simulations[i] = {
         ...simulation,
         snakeEyeFails: simulation.snakeEyeFails + aggregatedSnakeEyeFails,
@@ -87,7 +86,7 @@ const runSimulations = () => {
       };
     }
 
-    setTimeout(runSimulations, 10);
+    setTimeout(runSimulations, 10); // Repeat the simulations after 10ms
   } catch (error) {
     const err = error as Error;
     console.error("Error during GPU simulation:", err.message);
