@@ -13,7 +13,7 @@
   <div>Throws<span>{simulation.throws}</span></div>
   <div>Risk of snake eyes<span>{(snakeEyeRisk * 100).toFixed(1)}%</span></div>
   <div>Risk of low points<span>{(lowPointRisk * 100).toFixed(1)}%</span></div>
-  <div>Total risk: <span>{(totalRisk * 100).toFixed(1)}%</span></div>
+  <div>Total risk <span>{(totalRisk * 100).toFixed(1)}%</span></div>
 </div>
 
 <style>

@@ -3,4 +3,12 @@
   import "../global.css";
 </script>
 
-<slot></slot>
+<main>
+  <slot></slot>
+</main>
+
+<style>
+  main {
+    padding: 0.5rem;
+  }
+</style>

@@ -1,9 +1,9 @@
 <script lang="ts">
   import Result from "$lib/components/Result.svelte";
-  import type { Simulation } from "$lib/types";
-  import { onMount, tick } from "svelte";
+  import { onMount } from "svelte";
+  import createWorker from "$lib/worker/createSimulationWorker";
 
-  let simulations: Simulation[] = Array.from({ length: 15 }, (_, index) => ({
+  let simulations = Array.from({ length: 15 }, (_, index) => ({
     throws: 10 + index,
     runs: {
       snakeEye: 0,
@@ -13,61 +13,52 @@
     lowPointFails: 0,
   }));
 
-  const throwDice = () => Math.floor(Math.random() * 6) + 1;
+  let worker: Worker;
+  let startTime: number;
+  let runsPerSecond = 0;
 
-  const playOneGame = (throws: number) => {
-    let points = 0;
-    let snakeEyeFail = false;
-
-    for (let i = 0; i < throws; i++) {
-      const dice1 = throwDice();
-      const dice2 = throwDice();
-
-      if (dice1 === 1 && dice2 === 1) {
-        snakeEyeFail = true;
-      }
-
-      points += dice1 + dice2;
+  const formatNumber = (value: number) => {
+    if (value >= 1_000_000_000) {
+      return (value / 1_000_000_000).toFixed(3).replace(/\.0$/, "") + "B";
+    } else if (value >= 1_000_000) {
+      return (value / 1_000_000).toFixed(2).replace(/\.0$/, "") + "M";
+    } else if (value >= 1_000) {
+      return (value / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
+    } else {
+      return value.toString();
     }
-
-    return {
-      snakeEyeFail,
-      lowPointFail: points < 100,
-    };
   };
 
-  onMount(async () => {
-    while (true) {
-      simulations.forEach((simulation, index) => {
-        const { snakeEyeFail, lowPointFail } = playOneGame(simulation.throws);
+  const calculateRunsPerSecond = (runs: number) => {
+    const currentTime = Date.now();
+    const elapsedTimeInSeconds = (currentTime - startTime) / 1000;
+    return (runsPerSecond = runs / elapsedTimeInSeconds);
+  };
 
-        simulations[index] = {
-          ...simulations[index],
+  onMount(() => {
+    startTime = Date.now();
+    worker = createWorker();
 
-          snakeEyeFails: snakeEyeFail
-            ? simulations[index].snakeEyeFails + 1
-            : simulations[index].snakeEyeFails,
+    // Start the worker simulation
+    worker.postMessage({ action: "start", simulations });
 
-          lowPointFails:
-            lowPointFail && !snakeEyeFail
-              ? simulations[index].lowPointFails + 1
-              : simulations[index].lowPointFails,
+    worker.onmessage = (e) => {
+      if (e.data.simulations) {
+        simulations = [...e.data.simulations];
+      }
+    };
 
-          runs: {
-            snakeEye: simulations[index].runs.snakeEye + 1,
-            lowPoint: snakeEyeFail
-              ? simulations[index].runs.lowPoint
-              : simulations[index].runs.lowPoint + 1,
-          },
-        };
-      });
-      await tick();
-      await new Promise((resolve) => setTimeout(resolve, 1));
-    }
+    return () => {
+      worker.postMessage({ action: "stop" });
+      worker.terminate();
+    };
   });
+
+  $: runsPerSecond = calculateRunsPerSecond(simulations[0].runs.snakeEye);
 </script>
 
-<h1>Runs {simulations[0].runs.snakeEye}</h1>
+<h1>Runs {formatNumber(simulations[0].runs.snakeEye)}</h1>
+<h2>Runs per second: {formatNumber(runsPerSecond)}</h2>
 {#each simulations as simulation}
   <Result {simulation} />
 {/each}
@@ -75,11 +66,20 @@
 <style>
   h1 {
     font-size: 4rem;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 2rem;
+    margin: 0 0 2rem;
   }
 
   @media (min-width: 50rem) {
     h1 {
       font-size: 6rem;
+    }
+    h2 {
+      font-size: 3rem;
     }
   }
 </style>
